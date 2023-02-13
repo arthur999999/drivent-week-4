@@ -40,3 +40,30 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
     res.sendStatus(500);
   }
 }
+
+export async function putBooking(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
+
+  const  { roomId } = req.body;
+
+  if(!roomId) {
+    res.sendStatus(400);
+    return;
+  }
+
+  try {
+    const putBooking = await bookingService.putBooking(Number(userId), Number(roomId));
+
+    res.send(putBooking).status(200);
+  } catch (error) {
+    if(error.name == "NotFoundError") {
+      res.sendStatus(404);
+      return;
+    }
+    if(error.name == "ForbiddenError") {
+      res.sendStatus(403);
+      return;
+    }
+    res.sendStatus(500);
+  }
+}

@@ -42,9 +42,39 @@ async function postBooking(userId: number, roomId: number) {
   return { bookingId: booking.id };
 }
 
+async function putBooking(userId: number, roomId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+
+  if( !enrollment ) {
+    throw notFoundError();
+  }
+
+  const booking = await bookingRepository.getBookingById(userId);
+  if(!booking) {
+    throw forbiddenError("Booking not found");
+  }
+
+  const room = await hotelRepository.findRoomById(roomId);
+
+  if( !room ) {
+    throw notFoundError();
+  }
+
+  const roomOccupied = await bookingRepository.getBookingByRoomId(roomId);
+
+  if (roomOccupied) {
+    throw forbiddenError("Room occupied");
+  }
+
+  const updateBooking = await bookingRepository.updateBooking(roomId, booking.id);
+
+  return { bookingId: updateBooking.id };
+}
+
 const bookingService = {
   getBooking,
-  postBooking
+  postBooking,
+  putBooking
 };
 
 export  { bookingService };
